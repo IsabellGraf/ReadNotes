@@ -21,6 +21,19 @@ find_notes:
 
 create_variants:
 	python SCRIPTS/create_variants.py NOTES_YES_NO/YES/*.jpg
+	python SCRIPTS/create_variants.py NOTES_YES_NO/NO/*.jpg
+
+delete_variants:
+	rm -f NOTES_YES_NO/YES/*_*
+	rm -f NOTES_YES_NO/NO/*_*
 
 notes_to_csv: 
 	python SCRIPTS/notes_to_csv.py X_notes.csv Y_notes.csv NOTES_YES_NO/ False
+
+classify:
+	python SCRIPTS/classify_notes.py X_notes.csv Y_notes.csv
+
+classify_layers:
+	python SCRIPTS/classify_notes_multiple_layers.py X_notes.csv Y_notes.csv
+
+

@@ -3,6 +3,7 @@
 import sys
 import cv2
 import numpy as np
+import os
 
 # See
 # http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_filtering/py_filtering.html
@@ -51,18 +52,17 @@ def bilateral(img):
 
 def write_variants(image_location, n):
     img = read_image(image_location)
-    head = image_location.split('.')[:-1]
-    head = ''.join(head)
-    tail = image_location.split('.')[-1]
+    basename = os.path.basename(image_location)
+    head, tail = os.path.splitext(basename)
 
     for k in range(1, n + 1):
-        cv2.imwrite('%s_l_%d.%s' % (head, k, tail), left_shift_by_n(img, k))
-        cv2.imwrite('%s_r_%d.%s' % (head, k, tail), right_shift_by_n(img, k))
-        cv2.imwrite('%s_u_%d.%s' % (head, k, tail), up_shift_by_n(img, k))
-        cv2.imwrite('%s_d_%d.%s' % (head, k, tail), down_shift_by_n(img, k))
+        cv2.imwrite('%s_l_%d%s' % (head, k, tail), left_shift_by_n(img, k))
+        cv2.imwrite('%s_r_%d%s' % (head, k, tail), right_shift_by_n(img, k))
+        cv2.imwrite('%s_u_%d%s' % (head, k, tail), up_shift_by_n(img, k))
+        cv2.imwrite('%s_d_%d%s' % (head, k, tail), down_shift_by_n(img, k))
     for k in range(2, 4):
-        cv2.imwrite('%s_b_%d.%s' % (head, k, tail), blur_image(img, k))
-    cv2.imwrite('%s_i.%s' % (head, tail), bilateral(img))
+        cv2.imwrite('%s_b_%d%s' % (head, k, tail), blur_image(img, k))
+    cv2.imwrite('%s_i_%s' % (head, tail), bilateral(img))
 
 
 if __name__ == "__main__":
