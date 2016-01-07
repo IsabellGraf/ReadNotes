@@ -55,7 +55,7 @@ def classifier(X_list,Y_list,X_test,Y_test):
     b = tf.Variable(tf.zeros([size_Y]))
     y = tf.nn.softmax(tf.matmul(x, W) + b)
     y_ = tf.placeholder(tf.float32, [None, size_Y])
-    cross_entropy = -tf.reduce_sum(y_*tf.log(y))
+    cross_entropy = -tf.reduce_sum(y_*tf.log(y + 1e-9))
     train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
     init = tf.initialize_all_variables()
     sess = tf.Session()
@@ -63,14 +63,16 @@ def classifier(X_list,Y_list,X_test,Y_test):
 
     for X_train, Y_train in zip(X_list, Y_list):
         sess.run(train_step, feed_dict={x: X_train, y_: Y_train})
-    
+
     correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print '\n\nFirst Model:\n'
     print("test accuracy %g" % sess.run(accuracy, feed_dict={x: X_test, y_: Y_test}))
 
     prediction=tf.argmax(y,1)
-    print "prediction", prediction.eval(session = sess, feed_dict={x: X_test})
+    result = prediction.eval(session = sess, feed_dict={x: X_test})
+    print "prediction: ", result
+    np.savetxt("result.csv", result, delimiter=",")
 
     #probabilities=y
     #print "probabilities", probabilities.eval(session = sess, feed_dict={x: X_test})

@@ -1,7 +1,8 @@
 clean:
 	rm -rf PREPROCESSED/*
 
-all: gerade verkleinert find_lines find_notes
+preprocess: gerade verkleinert find_lines find_notes
+
 
 gerade:
 	mkdir PREPROCESSED/STRAIGHT
@@ -27,8 +28,10 @@ delete_variants:
 	rm -f NOTES_YES_NO/YES/*_*
 	rm -f NOTES_YES_NO/NO/*_*
 
+classify_notes: notes_to_csv classify_layers
+
 notes_to_csv: 
-	python SCRIPTS/notes_to_csv.py X_notes.csv Y_notes.csv NOTES_YES_NO/ False
+	python SCRIPTS/notes_to_csv.py X_notes.csv Y_notes.csv NOTES_YES_NO/ False True
 
 classify:
 	python SCRIPTS/classify_notes.py X_notes.csv Y_notes.csv

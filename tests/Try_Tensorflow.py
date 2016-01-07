@@ -77,9 +77,13 @@ correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 
 sess.run(tf.initialize_all_variables())
-for i in range(100):
+for i in range(200):
     batch = mnist.train.next_batch(50)
     if i%100 == 0:
+        print type(batch[0])
+        print batch[0].shape
+        print type(batch[1])
+        print batch[1].shape
         train_accuracy = accuracy.eval(session=sess, feed_dict={x:batch[0], y_: batch[1], keep_prob: 1.0})
         print("step %d, training accuracy %g"%(i, train_accuracy))
     train_step.run(session = sess, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
