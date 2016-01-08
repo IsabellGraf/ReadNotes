@@ -1,7 +1,9 @@
 import tensorflow as tf
 import numpy as np
+import scipy.misc
 import csv
 import sys
+import glob
 from PIL import Image
 
 
@@ -9,20 +11,24 @@ def get_X_Y(IN_FILE_X, IN_FILE_Y):
     train_size = 0.9
     X = np.genfromtxt(IN_FILE_X, delimiter=',')
     Y_index = np.genfromtxt(IN_FILE_Y, delimiter=',')
-
+    
     m = X.shape[0]
     size_Y = max(Y_index)+1
     size_X = X.shape[1]
 
     Y = np.zeros((m, size_Y))
+    Y[range(m),list(Y_index)] = 1
 
-    rand_index = list(np.random.permutation(m))
+    rand_index1 = list(np.random.permutation(m))
+    X = X[rand_index1,:]
+    Y = Y[rand_index1,:]
+    rand_index2 = list(np.random.permutation(m))
+    X = X[rand_index2,:]
+    Y = Y[rand_index2,:]
+
     m_train = int(m*train_size)
-    X_train = X[rand_index[:m_train],:]
-    X_test = X[rand_index[m_train:],:]
-    
-    Y[range(m),list(Y_index[rand_index])] = 1
-    
+    X_train = X[:m_train,:]
+    X_test = X[m_train:,:]    
     Y_train = Y[:m_train,:]
     Y_test = Y[m_train:,:]
     return X_train,Y_train,X_test,Y_test
@@ -68,7 +74,7 @@ def classifier(X_list,Y_list,X_test,Y_test):
     b_conv1 = bias_variable([32])
     x = tf.placeholder(tf.float32, [None, size_X])
     y_ = tf.placeholder(tf.float32, [None, size_Y])
-    x_image = tf.reshape(x, [-1,32,80,1])
+    x_image = tf.reshape(x, [-1,80,32,1])
 
     h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
     h_pool1 = max_pool_2x2(h_conv1)
@@ -79,10 +85,10 @@ def classifier(X_list,Y_list,X_test,Y_test):
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
     h_pool2 = max_pool_2x2(h_conv2)
 
-    W_fc1 = weight_variable([8 * 20 * 64, 1024])
+    W_fc1 = weight_variable([20 * 8 * 64, 1024])
     b_fc1 = bias_variable([1024])
 
-    h_pool2_flat = tf.reshape(h_pool2, [-1, 8 * 20 * 64])
+    h_pool2_flat = tf.reshape(h_pool2, [-1, 20 * 8 * 64])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
     keep_prob = tf.placeholder("float")
@@ -104,13 +110,19 @@ def classifier(X_list,Y_list,X_test,Y_test):
     sess.run(tf.initialize_all_variables())
     i=0
     for X_train, Y_train in zip(X_list, Y_list):
+
+        #for xx,yy in zip(X_train,Y_train):
+        #    note = np.reshape(xx,(80,32))
+        #    num_files = len(glob.glob('./*.jpg'))
+        #    scipy.misc.imsave('note%04i_%01i.jpg' % (num_files, yy[1]), note)
+
         if i%10 == 0:
             train_accuracy = accuracy.eval(session=sess, feed_dict={x: X_train, y_: Y_train, keep_prob: 1.0})
             print('Training accuracy %g' % train_accuracy)
         train_step.run(session = sess, feed_dict={x: X_train, y_: Y_train, keep_prob: 0.5})
         i=i+1
 
-    print("test accuracy %g"%accuracy.eval(session = sess, feed_dict={x: X_test, y_: Y_test, keep_prob: 1.0}))
+    print("Test accuracy %g"%accuracy.eval(session = sess, feed_dict={x: X_test, y_: Y_test, keep_prob: 1.0}))
     prediction=tf.argmax(y_conv,1)
     result = prediction.eval(session = sess, feed_dict={x: X_test, keep_prob: 1.0})
     print result

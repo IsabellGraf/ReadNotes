@@ -9,7 +9,7 @@ def add_artifact(image_file):
     im = Image.open(image_file)
 
     x, y = im.size
-    eX, eY = 20, 20  # Size of Bounding Box for ellipse
+    eX, eY = 15, 15  # Size of Bounding Box for ellipse
 
     bbox = (x / 2 - eX / 2, y / 2 - eY / 2, x / 2 + eX / 2, y / 2 + eY / 2)
     draw = ImageDraw.Draw(im)
@@ -27,7 +27,7 @@ def folder_to_csv_min(folder, Xwriter, Ywriter, y, minimum, with_artifact):
             note = add_artifact(note_file)
         else:
             note = np.asarray(Image.open(note_file))
-        to_save = np.reshape(note,(1,note.shape[0]*note.shape[1]))
+        to_save = np.reshape(note,(1,note.shape[0]*note.shape[1]))/255
         Xwriter.writerows(to_save)
         Y = np.reshape(np.array(y),(1,1))   
         Ywriter.writerows(Y)
@@ -38,7 +38,7 @@ def folder_to_csv(folder, Xwriter, Ywriter, y, with_artifact):
             note = add_artifact(note_file)
         else:
             note = np.asarray(Image.open(note_file))
-        to_save = np.reshape(note,(1,note.shape[0]*note.shape[1]))
+        to_save = np.reshape(note,(1,note.shape[0]*note.shape[1]))/255
         Xwriter.writerows(to_save)
         Y = np.reshape(np.array(y),(1,1))   
         Ywriter.writerows(Y)
@@ -57,8 +57,8 @@ if __name__ == '__main__':
     Yf = open(OUT_FILE_Y,'w')
     Ywriter = csv.writer(Yf)
 
-    print equal
-    print with_artifact
+    print 'Equal: ',  equal
+    print 'With artifact: ', with_artifact
     y = 0
     
     if equal == 'True':    # True means that output variants have the same amount

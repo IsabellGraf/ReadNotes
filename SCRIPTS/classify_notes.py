@@ -9,20 +9,24 @@ def get_X_Y(IN_FILE_X, IN_FILE_Y):
     train_size = 0.9
     X = np.genfromtxt(IN_FILE_X, delimiter=',')
     Y_index = np.genfromtxt(IN_FILE_Y, delimiter=',')
-
+    
     m = X.shape[0]
     size_Y = max(Y_index)+1
     size_X = X.shape[1]
 
     Y = np.zeros((m, size_Y))
+    Y[range(m),list(Y_index)] = 1
 
-    rand_index = list(np.random.permutation(m))
+    rand_index1 = list(np.random.permutation(m))
+    X = X[rand_index1,:]
+    Y = Y[rand_index1,:]
+    rand_index2 = list(np.random.permutation(m))
+    X = X[rand_index2,:]
+    Y = Y[rand_index2,:]
+
     m_train = int(m*train_size)
-    X_train = X[rand_index[:m_train],:]
-    X_test = X[rand_index[m_train:],:]
-    
-    Y[range(m),list(Y_index[rand_index])] = 1
-    
+    X_train = X[:m_train,:]
+    X_test = X[m_train:,:]    
     Y_train = Y[:m_train,:]
     Y_test = Y[m_train:,:]
     return X_train,Y_train,X_test,Y_test
@@ -72,7 +76,8 @@ def classifier(X_list,Y_list,X_test,Y_test):
     prediction=tf.argmax(y,1)
     result = prediction.eval(session = sess, feed_dict={x: X_test})
     print "prediction: ", result
-    np.savetxt("result.csv", result, delimiter=",")
+    to_save = Y_test, result
+    np.savetxt("result.csv", to_save, delimiter=",")
 
     #probabilities=y
     #print "probabilities", probabilities.eval(session = sess, feed_dict={x: X_test})
