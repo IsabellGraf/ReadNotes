@@ -59,7 +59,7 @@ def classifier(X_list,Y_list,X_test,Y_test):
     b = tf.Variable(tf.zeros([size_Y]))
     y = tf.nn.softmax(tf.matmul(x, W) + b)
     y_ = tf.placeholder(tf.float32, [None, size_Y])
-    cross_entropy = -tf.reduce_sum(y_*tf.log(y + 1e-9))
+    cross_entropy = -tf.reduce_sum(y_*tf.log(y + 1e-9)) # logistic regression as cost function
     train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
     init = tf.initialize_all_variables()
     sess = tf.Session()

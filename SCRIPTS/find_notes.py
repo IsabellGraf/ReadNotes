@@ -46,10 +46,11 @@ def find_notes(lineM):
     tryer = norm_vec(tryer)
     #plt.plot(tryer)
     
-    how_oft_smooth = 24
+    how_oft_smooth = 20
     tryer = smooth(tryer,how_oft_smooth)
     tryer = norm_vec(tryer)
     #plt.plot(tryer)
+    #plt.savefig('im8.jpg', facecolor='w', edgecolor='w')
     #plt.show()
     
     index_minima = np.append(0,np.asarray(find_minima(tryer))[0])
@@ -93,6 +94,6 @@ if __name__ == '__main__':
         for note in parts:
             note = equalize(note)
             num_files = len(glob.glob(OUT_FILE + '*.jpg'))
-            sp.misc.imsave(OUT_FILE + 'note%04i.jpg' % num_files, note)
+            sp.misc.imsave(OUT_FILE + 'note1%04i.jpg' % num_files, note)
         
 

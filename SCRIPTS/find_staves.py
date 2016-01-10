@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sp
+import scipy.misc
 import os
 import sys
 import glob
@@ -17,7 +18,7 @@ def remove_noice(songM):
     return songM
 
 
-def find_staves(songM, OUT_FILE = 'PREPROCESSED/LINES/'):
+def find_staves(songM, OUT_FILE = 'PREPROCESSED/STAVES/'):
     def project_to_left(matrix):
         vector = np.sum(matrix,axis=1)
         return vector
@@ -53,19 +54,20 @@ def find_staves(songM, OUT_FILE = 'PREPROCESSED/LINES/'):
         
     def get_corepart_vertical(part):
         translate = 0.7
-        add_number = 5
+        add_number = 3
+        smooth_number = 3
         i = 0
         continu = True
         while continu:
             vec = np.sum(part[:,i:i+add_number],axis=1)/add_number
-            vec = smooth(vec,2)/255.0 - translate
+            vec = smooth(vec,smooth_number)/255.0 - translate
             num = 0
             for zahl in range(len(vec)-1):
                 if vec[zahl] >= 0 and vec[zahl+1] < 0:
                     num = num + 1
                 if vec[zahl] <= 0 and vec[zahl+1] > 0:
                     num = num + 1
-            continu = num < 8  and i < 400      
+            continu = num < 6  and i < 300      
             i=i+add_number
         indexleft = i-add_number*2
 
@@ -73,31 +75,35 @@ def find_staves(songM, OUT_FILE = 'PREPROCESSED/LINES/'):
         continu = True
         while continu:
             vec = np.sum(part[:,i-add_number:i],axis=1)/add_number 
-            vec = smooth(vec,2)/255.0 - translate
+            vec = smooth(vec,smooth_number)/255.0 - translate
+            #plt.plot(vec)
             num = 0
             for zahl in range(len(vec)-1):
                 if vec[zahl] >= 0 and vec[zahl+1] < 0:
                     num = num + 1
                 if vec[zahl] <= 0 and vec[zahl+1] > 0:
                     num = num + 1
-            continu = num < 8 and i > 550
+            #print num
+            #plt.show()
+            continu = num < 6 and i > 700
             i=i-add_number
         indexright = i+add_number*2
         return part[:,indexleft:indexright]
 
     def check_if_stave(part):
-        translate = 0.4
+        translate = 0.45
         vec = project_to_left(part)
         vec = norm_vec(vec) - translate
         #plt.plot(vec)
-        #plt.show()
         num = 0
         for zahl in range(len(vec)-1):
             if vec[zahl] >= 0 and vec[zahl+1] < 0:
                 num = num + 1
             if vec[zahl] <= 0 and vec[zahl+1] > 0:
                 num = num + 1
-        return num >= 10
+        #print num
+        #plt.show()
+        return num >= 8
         
     def separate_to_staves(matrix, vec, indices_minima):
         index_left = indices_minima[0]
@@ -106,21 +112,25 @@ def find_staves(songM, OUT_FILE = 'PREPROCESSED/LINES/'):
             part = matrix[index_left:index_right,:]
             if check_if_stave(part):
                 part = get_corepart_vertical(part)
-                num_files = len(glob.glob(OUT_FILE + '*.jpg'))
-                sp.misc.imsave(OUT_FILE + 'line%03i.jpg' % num_files, part)
+                if check_if_stave(part):
+                    num_files = len(glob.glob(OUT_FILE + '*.jpg'))
+                    scipy.misc.imsave(OUT_FILE + 'line%03i.jpg' % num_files, part)
             index_left = index_right
     
     tryer = project_to_left(songM)
     tryer = norm_vec(tryer)
-    #plt.plot(tryer)
+    #plt.plot(tryer, range(len(tryer)))
     
     how_oft_smooth = 200
     tryer = smooth(tryer,how_oft_smooth)
     tryer = norm_vec(tryer)
-    #plt.plot(tryer)
+    #plt.plot(tryer, range(len(tryer)))
+    #plt.savefig('im4.jpg', facecolor='w', edgecolor='w')
     #plt.show()
     
+    
     index_minima = np.append(0,np.asarray(find_minima(tryer))[0])
+    index_minima = np.append(index_minima,len(tryer)-1)
     separate_to_staves(songM, tryer, index_minima)   
 
 
