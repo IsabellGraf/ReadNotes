@@ -14,10 +14,10 @@ This takes the note files from ORIGINALS and rotates the whole file such that th
 The rotated files are saved in PREPROCESSED/STRAIGHT. 
 
 Original image
-![Original image](figures/im1.jpg)
+![Original image](figures_ReadMe/im1.jpg)
 
 Straight image
-![Straight image](figures/im2.jpg)
+![Straight image](figures_ReadMe/im2.jpg)
 
 ###Shrink image size###
 Mostly the size of a scanned image is large. This would make the process and calculation very longly.
@@ -27,13 +27,13 @@ We simply use the programm 'convert' to shrink the image size to 1000 pixel hori
 ###Find staves###
 Next we want to separate the single staves from each other. With python we open the note file and convert the input to only black-white. Usually colors don't carry information regarding notes. We read the jpge input as array and obtain a matrix with numbers between 0 (black) and 255 (white).
 
-![](figures/im20.png)
+![](figures_ReadMe/im20.png)
 
 We exploit the fact that staves basically are composed of five black lines, which cross the whole horizontal. The darker the color, the smaller the numbers of the matrix. 
 This means, by adding up the columns of the matrix, we obtain a vector that has five minima per stave; one for each line of the stave.
 In the following figure we see the normalized vector in blue and see for each of the three stave the five lines.
 
-![](figures/im4.jpg)
+![](figures_ReadMe/im4.jpg)
 
 We smooth the blue curve using Laplacian smoothing and obtain the green line.
 This is done such that we mathematically 'summarize' the five black lines to one whole. This green line has three maxima and we cut the line exactly at the maxima. 
@@ -41,22 +41,22 @@ The indices of the cuts are also used to cut the jpeg matrix.
 Additionally, the separate matrices are verified to be staves and not the song header, text or anything else. Redundant white space from left, right, top and bottom is removed and finally we save the separated matrix pieces as jpg and obtain the single staves in the folder PREPROCESS/STAVES.
 
 Here as an example the first stave:
-![](figures/im5.jpg)
+![](figures_ReadMe/im5.jpg)
 
 ###Find notes###
 The last step in the preprocess is to separate the single objects appearing in a stave from each other and save the object in single jpg files. This can be notes, clefs, rests, bars and so on. 
 We open the jpg-file with the staves as matrix and again exploit the fact that the objects in the lines are black and hence are presented by smaller numbers in the matrix. This time we sum up the rows of the matrix and obtain a horizontal vector. After normalizing the vector, the five black lines of the staves do not impair the recognition of the objects because the lines go constantly through the whole image and cancel out. 
 We regard the vector as a function and smooth it using Laplacian smoothing. This is done to avoid little deflections affecting the process. Now we search for maxima. In the following figure, the blue curve is the rows summed up and the green curve is the smoothed vector.
 
-![](figures/im8.jpg)
+![](figures_ReadMe/im8.jpg)
 
 Cutting the matrix at the maxima found using the green line, we obtain the objects appearing in the stave. 
 We want that all jpg file containing the objects have the same size and add or remove therefore some white space.
 Finally the objects are saved as jpg files in PREPROCESS/NOTES. Some samples are plotted below.
 
-![1](figures/im9.jpg)  | ![2](figures/im10.jpg) | ![3](figures/im11.jpg) | ![4](figures/im12.jpg) | ![5](figures/im13.jpg)
+![1](figures_ReadMe/im9.jpg)  | ![2](figures_ReadMe/im10.jpg) | ![3](figures_ReadMe/im11.jpg) | ![4](figures_ReadMe/im12.jpg) | ![5](figures_ReadMe/im13.jpg)
 :-------------:|:--------------:|:--------------:|:--------------:|:--------------:
-![6](figures/im14.jpg) | ![7](figures/im15.jpg) | ![8](figures/im16.jpg) | ![9](figures/im17.jpg) | ![10](figures/im18.jpg)
+![6](figures_ReadMe/im14.jpg) | ![7](figures_ReadMe/im15.jpg) | ![8](figures_ReadMe/im16.jpg) | ![9](figures_ReadMe/im17.jpg) | ![10](figures_ReadMe/im18.jpg)
 
     
 ## Classify: From single note files to note-or-not-note recognition

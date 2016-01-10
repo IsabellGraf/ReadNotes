@@ -1,7 +1,7 @@
 clean:
 	rm -rf PREPROCESSED/*
 
-preprocess: gerade verkleinert find_lines find_notes
+preprocess: gerade verkleinert find_staves find_notes
 
 
 gerade:
@@ -12,13 +12,13 @@ verkleinert:
 	mkdir PREPROCESSED/SHRINKED
 	bash SCRIPTS/shrink_jpg.sh PREPROCESSED/SHRINKED/ PREPROCESSED/STRAIGHT/*.jpg
 
-find_lines: 
-	mkdir PREPROCESSED/LINES
-	python SCRIPTS/find_lines.py PREPROCESSED/LINES/ PREPROCESSED/SHRINKED/*.jpg
+find_staves: 
+	mkdir PREPROCESSED/STAVES
+	python SCRIPTS/find_staves.py PREPROCESSED/STAVES/ PREPROCESSED/SHRINKED/*.jpg
 
 find_notes:
 	mkdir PREPROCESSED/NOTES
-	python SCRIPTS/find_notes.py PREPROCESSED/NOTES/ PREPROCESSED/LINES/*.jpg
+	python SCRIPTS/find_notes.py PREPROCESSED/NOTES/ PREPROCESSED/STAVES/*.jpg
 
 create_variants:
 	python SCRIPTS/create_variants.py NOTES_YES_NO/YES/*.jpg
