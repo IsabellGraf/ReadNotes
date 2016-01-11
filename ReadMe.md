@@ -66,7 +66,7 @@ The aim of the following steps is to build a classifier using Google's library T
 Therefore we first need a large enough training set. The note file, we just created, must be split into notes and not-notes. We need to do this by hand because the computer cannot do this yet (That's just the point) and make a folder YES with all the notes and a folder NO with all the not-notes.
 
 To multiply the number of training examples the python function create_variants creates for each file several other files with slightly changes content. The slight changes are shifting the image a few pixels up, down, left or right, bluring and clearing the image. 
-Now we have a training set of over 28000 samples.
+Now we have a training set of over 150.000 samples.
 
 ###From jpg files to mathematical representation###
 To represent the jpg files in a mathematical way, the python function notes_to_csv.py writes a csv file X_notes.csv and inserts for each note file a row.
@@ -85,7 +85,7 @@ We define placeholders x and y_ for the training samples and the training labels
 
 In Tensorflow, the training steps obtain the training samples in separated batches to not overuse the capacity of the computer. 
 
-After the classifier is build, we check its quality with the test set and see that we obtain an accuracy of...
+After the classifier is build, we check its quality with the test set and see that we obtain an accuracy of 0.75
 
 ####Multilayer neural network####
 The accuracy of the logistic regression is not very good. Without hidden layers the network is not able to recognize shapes or neglect the size of the note. Therefore we build another neural network with several layers and weight matrices.
@@ -101,4 +101,4 @@ Finally, we obtain the output layer by matrix multiplication with a weight matri
 
 As costfunction we take logistic regression and as optimization accuracy 1e-4.
 
-After the classifier is build, we check its quality with the test set and see that the accuracy improved to...
+After the classifier is build, we check its quality with the test set and see that the accuracy improved to 0.80
