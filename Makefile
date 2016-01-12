@@ -28,13 +28,13 @@ delete_variants:
 	rm -f NOTES_YES_NO/YES/*_*
 	rm -f NOTES_YES_NO/NO/*_*
 
-classify_notes: classify
+classify_notes: classify_layers
 
 notes_to_csv: 
 	python SCRIPTS/notes_to_csv.py X_notes.csv Y_notes.csv NOTES_YES_NO/ False False
 
 classify:
-	python SCRIPTS/classify_notes_new.py NOTES_YES_NO
+	python SCRIPTS/classify_notes.py NOTES_YES_NO
 
 classify_layers:
 	python SCRIPTS/classify_notes_multiple_layers.py NOTES_YES_NO

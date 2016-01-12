@@ -10,7 +10,7 @@ from PIL import Image
 
 
 def get_Note_files_list(this_folder):
-    train_size = 0.97
+    train_size = 0.99
     folders = sorted([x[0] for x in os.walk(this_folder)])[1:]
     files = []
     for folder in folders:
@@ -67,13 +67,13 @@ def classifier(FILES_FOLDER):
     size_X = get_X_size(Files_list_test[0])
     size_Y = 2
 
-    def weight_variable(shape):
+    def weight_variable(shape, this_name):
         initial = tf.truncated_normal(shape, stddev=0.1)
-        return tf.Variable(initial)
+        return tf.Variable(initial, name=this_name)
 
-    def bias_variable(shape):
+    def bias_variable(shape, this_name):
         initial = tf.constant(0.1, shape=shape)
-        return tf.Variable(initial)
+        return tf.Variable(initial, name=this_name)
 
     def conv2d(x, W):
         return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
@@ -81,8 +81,8 @@ def classifier(FILES_FOLDER):
     def max_pool_2x2(x):
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-    W_conv1 = weight_variable([5, 5, 1, 32])
-    b_conv1 = bias_variable([32])
+    W_conv1 = weight_variable([5, 5, 1, 32], 'W_conv1')
+    b_conv1 = bias_variable([32], 'b_conv1')
     x = tf.placeholder(tf.float32, [None, size_X])
     y_ = tf.placeholder(tf.float32, [None, size_Y])
     x_image = tf.reshape(x, [-1,80,32,1])
@@ -90,14 +90,14 @@ def classifier(FILES_FOLDER):
     h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
     h_pool1 = max_pool_2x2(h_conv1)
 
-    W_conv2 = weight_variable([5, 5, 32, 64])
-    b_conv2 = bias_variable([64])
+    W_conv2 = weight_variable([5, 5, 32, 64], 'W_conv2')
+    b_conv2 = bias_variable([64], 'b_conv2')
 
     h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
     h_pool2 = max_pool_2x2(h_conv2)
 
-    W_fc1 = weight_variable([20 * 8 * 64, 1024])
-    b_fc1 = bias_variable([1024])
+    W_fc1 = weight_variable([20 * 8 * 64, 1024], 'W_fc1')
+    b_fc1 = bias_variable([1024], 'b_fc1')
 
     h_pool2_flat = tf.reshape(h_pool2, [-1, 20 * 8 * 64])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
@@ -105,8 +105,8 @@ def classifier(FILES_FOLDER):
     keep_prob = tf.placeholder("float")
     h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
-    W_fc2 = weight_variable([1024, size_Y])
-    b_fc2 = bias_variable([size_Y])
+    W_fc2 = weight_variable([1024, size_Y], 'W_fc2')
+    b_fc2 = bias_variable([size_Y], 'b_fc2')
 
     y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
@@ -114,6 +114,7 @@ def classifier(FILES_FOLDER):
     train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
     correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+    saver = tf.train.Saver()
 
     print '\n\nSecond Model \n'
 
@@ -132,13 +133,19 @@ def classifier(FILES_FOLDER):
     print("Test accuracy %g"%accuracy.eval(session = sess, feed_dict={x: X_test, y_: Y_test, keep_prob: 1.0}))
     prediction=tf.argmax(y_conv,1)
     result = prediction.eval(session = sess, feed_dict={x: X_test, keep_prob: 1.0})
-    print result
 
     Rf = open('result.txt','w')
     for xx,yy in zip(Files_list_test, result):
         to_save = xx + str(yy) + '\n'
         Rf.write(to_save)
     Rf.close()
+
+    if not os.path.exists('MODEL/'):
+        os.makedirs('MODEL/')
+
+    save_path = saver.save(sess, "./MODEL/model_layers.ckpt")
+    print('Model saved in file: %s' % save_path)
+
 
 
 
