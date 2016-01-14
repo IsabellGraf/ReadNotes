@@ -140,10 +140,10 @@ def classifier(FILES_FOLDER):
         Rf.write(to_save)
     Rf.close()
 
-    if not os.path.exists('MODEL/'):
-        os.makedirs('MODEL/')
+    if not os.path.exists('../MODEL/'):
+        os.makedirs('../MODEL/')
 
-    save_path = saver.save(sess, "./MODEL/model_layers.ckpt")
+    save_path = saver.save(sess, "../MODEL/model_layers.ckpt")
     print('Model saved in file: %s' % save_path)
 
 

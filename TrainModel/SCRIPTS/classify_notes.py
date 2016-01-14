@@ -104,10 +104,10 @@ def classifier(FILES_FOLDER):
         Rf.write(to_save)
     Rf.close()
     
-    if not os.path.exists('MODEL/'):
-        os.makedirs('MODEL/')
+    if not os.path.exists('../MODEL/'):
+        os.makedirs('../MODEL/')
 
-    save_path = saver.save(sess, "./MODEL/model.ckpt")
+    save_path = saver.save(sess, "../MODEL/model.ckpt")
 
     #probabilities=y
     #print "probabilities", probabilities.eval(session = sess, feed_dict={x: X_test})
