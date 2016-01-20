@@ -34,9 +34,9 @@ notes_to_csv:
 	python SCRIPTS/notes_to_csv.py X_notes.csv Y_notes.csv NOTES_YES_NO/ False False
 
 classify:
-	python SCRIPTS/classify_notes.py NOTES_YES_NO
+	python SCRIPTS/classify_notes.py NOTES_YES_NO equal=True
 
 classify_layers:
-	python SCRIPTS/classify_notes_multiple_layers.py NOTES_YES_NO
+	python SCRIPTS/classify_notes_multiple_layers.py NOTES_YES_NO equal=True
 
 

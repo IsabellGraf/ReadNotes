@@ -8,11 +8,25 @@ import random
 from PIL import Image
 
 
-def get_Note_files_list(this_folder):
-    train_size = 0.9
+def get_min_samples(folders):
+    min_samples = float('inf')
+    for folder in folders:
+        x = len(glob.glob(folder + '/*.jpg'))
+        if x < min_samples:
+            min_samples = x
+    return min_samples
+
+
+def get_Note_files_list(this_folder, equal):
+    train_size = 0.99
     folders = sorted([x[0] for x in os.walk(this_folder)])[1:]
+    min_samples = get_min_samples(folders)
+
     files = []
     for folder in folders:
+        if equal == 'equal=True':
+            files = files + glob.glob(folder + '/*.jpg')[:min_samples]
+        else:
             files = files + glob.glob(folder + '/*.jpg')
     files = random.sample(files, len(files))
     files = random.sample(files, len(files))
@@ -60,9 +74,9 @@ def get_X_size(file_name):
     return size_X
 
 
-def classifier(FILES_FOLDER):
+def classifier(FILES_FOLDER, equal):
     
-    Files_list_train, Files_list_test = get_Note_files_list(FILES_FOLDER)
+    Files_list_train, Files_list_test = get_Note_files_list(FILES_FOLDER, equal)
     Files_batches = make_batches(Files_list_train)
     size_X = get_X_size(Files_list_test[0])
     size_Y = 2
@@ -114,5 +128,6 @@ def classifier(FILES_FOLDER):
 
 if __name__ == '__main__':
     FILES_FOLDER = sys.argv[1]
-    classifier(FILES_FOLDER)
+    equal = sys.argv[2]
+    classifier(FILES_FOLDER, equal)
     
