@@ -19,15 +19,22 @@ def get_min_samples(folders):
 
 def get_Note_files_list(this_folder, equal):
     train_size = 0.99
-    folders = sorted([x[0] for x in os.walk(this_folder)])[1:]
-    min_samples = get_min_samples(folders)
+    folder_list = sorted([x[0] for x in os.walk(this_folder)])[1:]
+    folders1 = [folder for folder in folder_list if len(folder.split('/'))<3]
+    min_samples = get_min_samples(folders1)
 
     files = []
-    for folder in folders:
+    for folder1 in folders1:
         if equal == 'equal=True':
-            files = files + glob.glob(folder + '/*.jpg')[:min_samples]
+            files_equal = []
+            folders2 = sorted([x[0] for x in os.walk(folder1)])
+            for folder2 in folders2:
+                files_equal = files_equal + glob.glob(folder2 + '/*.jpg')
+            files = files + files_equal[:min_samples]
         else:
-            files = files + glob.glob(folder + '/*.jpg')
+            folders2 = sorted([x[0] for x in os.walk(folder1)])
+            for folder2 in folders2:
+                files = files + glob.glob(folder2 + '/*.jpg')
     files = random.sample(files, len(files))
     files = random.sample(files, len(files))
 
@@ -50,21 +57,25 @@ def make_batches(files_list):
     return Files_batches
     
 
-def make_XY(batch, size_X):
+def make_XY(batch, size_X, FILES_FOLDER):
     X = np.zeros(shape=(0, size_X))
-    Y = np.zeros(shape=(0, 2))
+
+    Y_list = sorted(os.listdir(FILES_FOLDER))
+    size_Y = len(Y_list)
+
+    Y = np.zeros(shape=(0, size_Y))
     for file_name in batch:
         content = np.asarray(Image.open(file_name))
         next_row = np.reshape(content,(1,content.shape[0]*content.shape[1]))/255
         X = np.append(X,next_row,axis=0)
-        if '/YES/' in file_name:
-            next_row = np.array([0, 1])
-            next_row = np.reshape(next_row,(1,2))
-            Y = np.append(Y,next_row, axis=0)
-        else:
-            next_row = np.array([1, 0])
-            next_row = np.reshape(next_row,(1,2))
-            Y = np.append(Y,next_row, axis=0)
+        i=0
+        for Y_name in Y_list:
+            if '/'+Y_name+'/' in file_name:
+                next_row = np.eye(size_Y, dtype=int)[i,:]
+                next_row = np.reshape(next_row,(1,size_Y))
+                Y = np.append(Y, next_row, axis=0)
+            i=i+1
+        #print Y_list[list(next_row[0]).index(1)]
     return X, Y
 
 
@@ -74,11 +85,16 @@ def get_X_size(file_name):
     return size_X
 
 
+def get_Y_size(FILES_FOLDER):
+    size_Y = len(os.listdir(FILES_FOLDER))
+    return size_Y
+
+
 def classifier(FILES_FOLDER, equal):
     Files_list_train, Files_list_test = get_Note_files_list(FILES_FOLDER, equal)
     Files_batches = make_batches(Files_list_train)
     size_X = get_X_size(Files_list_test[0])
-    size_Y = 2
+    size_Y = get_Y_size(FILES_FOLDER)
 
     def weight_variable(shape, this_name):
         initial = tf.truncated_normal(shape, stddev=0.1)
@@ -94,8 +110,8 @@ def classifier(FILES_FOLDER, equal):
     def max_pool_2x2(x):
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-    W_conv1 = weight_variable([5, 5, 1, 32], 'W_conv1')
-    b_conv1 = bias_variable([32], 'b_conv1')
+    W_conv1 = weight_variable([11, 11, 1, 10], 'W_conv1')
+    b_conv1 = bias_variable([10], 'b_conv1')
     x = tf.placeholder(tf.float32, [None, size_X])
     y_ = tf.placeholder(tf.float32, [None, size_Y])
     x_image = tf.reshape(x, [-1,32,80,1])    
@@ -103,22 +119,22 @@ def classifier(FILES_FOLDER, equal):
     h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
     h_pool1 = max_pool_2x2(h_conv1)
 
-    W_conv2 = weight_variable([7, 7, 32, 64], 'W_conv2')
-    b_conv2 = bias_variable([64], 'b_conv2')
+    #W_conv2 = weight_variable([7, 7, 32, 64], 'W_conv2')
+    #b_conv2 = bias_variable([64], 'b_conv2')
 
-    h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
-    h_pool2 = max_pool_2x2(h_conv2)
+    #h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+    #h_pool2 = max_pool_2x2(h_conv2)
 
-    W_fc1 = weight_variable([80/4 * 32/4 * 64, 1024], 'W_fc1')    #W_conv2, b_conv2, h_conv2, h_pool2 rausgelassen, fc1 64 -> 32
-    b_fc1 = bias_variable([1024], 'b_fc1')
+    W_fc1 = weight_variable([80/2 * 32/2 * 10, 10], 'W_fc1')    #W_conv2, b_conv2, h_conv2, h_pool2 rausgelassen, fc1 64 -> 32
+    b_fc1 = bias_variable([10], 'b_fc1')
 
-    h_pool2_flat = tf.reshape(h_pool2, [-1, 80/4 * 32/4 * 64])
+    h_pool2_flat = tf.reshape(h_pool1, [-1, 80/2 * 32/2 * 10])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
     keep_prob = tf.placeholder("float")
     h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
-    W_fc2 = weight_variable([1024, size_Y], 'W_fc2')
+    W_fc2 = weight_variable([10, size_Y], 'W_fc2')
     b_fc2 = bias_variable([size_Y], 'b_fc2')
 
     y_conv=tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
@@ -138,30 +154,33 @@ def classifier(FILES_FOLDER, equal):
     #print("Model restored.")
 
     i=0
-    for batch in Files_batches:
-        X_train, Y_train = make_XY(batch, size_X)
+    for batch in Files_batches[:500]:
+        X_train, Y_train = make_XY(batch, size_X, FILES_FOLDER)
         if i%10 == 0:
             train_accuracy = accuracy.eval(session=sess, feed_dict={x: X_train, y_: Y_train, keep_prob: 1.0})
             print('Training accuracy %g' % train_accuracy)
         train_step.run(session = sess, feed_dict={x: X_train, y_: Y_train, keep_prob: 0.5})
         i=i+1
 
-    X_test, Y_test = make_XY(Files_list_test, size_X)
+    X_test, Y_test = make_XY(Files_list_test, size_X, FILES_FOLDER)
     print("Test accuracy %g"%accuracy.eval(session = sess, feed_dict={x: X_test, y_: Y_test, keep_prob: 1.0}))
     prediction=tf.argmax(y_conv,1)
-    #result = prediction.eval(session = sess, feed_dict={x: X_test, keep_prob: 1.0})
-    result = sess.run(y_conv, feed_dict={x: X_test, keep_prob: 1.0})
+    result = prediction.eval(session = sess, feed_dict={x: X_test, keep_prob: 1.0})
+    #result = sess.run(y_conv, feed_dict={x: X_test, keep_prob: 1.0})
 
+    Y_list = sorted(os.listdir(FILES_FOLDER))
     Rf = open('result.txt','w')
     for xx,yy in zip(Files_list_test, result):
-        to_save = xx + ' ' + ('%0.3f' % yy[1]) + '\n'
+        yyy = Y_list[yy]
+        to_save = xx + ' ' + yyy + '\n'
         Rf.write(to_save)
     Rf.close()
 
     if not os.path.exists('../MODEL/'):
         os.makedirs('../MODEL/')
 
-    save_path = saver.save(sess, "../MODEL/model_layers.ckpt")
+    #save_path = saver.save(sess, "../MODEL/model_layers.ckpt")
+    save_path = saver.save(sess, "../MODEL/model_layers_yes.ckpt")
     print('Model saved in file: %s' % save_path)
 
 
